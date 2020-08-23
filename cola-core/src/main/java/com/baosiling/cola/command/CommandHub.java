@@ -1,5 +1,6 @@
 package com.baosiling.cola.command;
 
+import com.baosiling.cola.exception.framework.ColaException;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
@@ -43,7 +44,7 @@ public class CommandHub {
     public CommandInvocation getCommandInvocation(Class cmdClass){
         CommandInvocation commandInvocation = commandRepository.get(cmdClass);
         if(commandInvocation == null){
-            //TODO throw new
+            throw new ColaException(cmdClass + " is not registered in CommandHub, please register first");
         }
         return commandInvocation;
     }

@@ -2,6 +2,9 @@ package com.baosiling.cola.command;
 
 import com.alibaba.cola.dto.Command;
 import com.alibaba.cola.dto.Response;
+import com.baosiling.cola.exception.framework.ExceptionHandlerFactory;
+import com.baosiling.cola.logger.Logger;
+import com.baosiling.cola.logger.LoggerFactory;
 import com.google.common.collect.FluentIterable;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +18,7 @@ import java.util.List;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class CommandInvocation {
 
-    //TODO log
+    private static Logger logger = LoggerFactory.getLogger(CommandInvocation.class);
 
     @Setter
     private CommandExecutorI commandExecutor;
@@ -46,7 +49,7 @@ public class CommandInvocation {
         } catch (Exception e) {
             response = getResponseInstance(command);
             response.setSuccess(false);
-            //TODO 异常处理
+            ExceptionHandlerFactory.getExceptionHandler().handleException(command, response, e);
         } finally {
             //make sure post interceptors preforms even though exception happens.
             postIntercept(command, response);

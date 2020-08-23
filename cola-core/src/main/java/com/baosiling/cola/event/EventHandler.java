@@ -1,7 +1,5 @@
-package com.baosiling.cola.command;
+package com.baosiling.cola.event;
 
-
-import com.alibaba.cola.dto.Command;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.*;
@@ -10,7 +8,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Component
-public @interface PostInterceptor {
-
-    Class<? extends Command>[] commands() default {};
+public @interface EventHandler {
 }
