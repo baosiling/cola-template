@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.alibaba.craftsman.tunnel.database.OrganizationTunnel">
+    <sql id="ALL_COLUMNS">
+        id,
+        org_id,
+        org_name,
+        parent_id,
+        employees,
+        crop_id,
+        is_deleted
+    </sql>
+
+    <sql id="COMMON_SELECT">
+        SELECT
+        <include refid="ALL_COLUMNS"/>
+        FROM department
+    </sql>
+
+    <select id="listByCropId" resultType="DepartmentDO" parameterType="map">
+        <include refid="COMMON_SELECT"/>
+        WHERE crop_id = #{cropId}
+        <if test='includeDeleted != null and includeDeleted=="N"'>
+            and is_deleted = 'n'
+        </if>
+    </select>
+</mapper>

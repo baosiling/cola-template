@@ -15,5 +15,6 @@
     <mappers>
         <mapper resource="mybatis/MetricMapper.xml"></mapper>
         <mapper resource="mybatis/UserProfileMapper.xml"></mapper>
+        <mapper resource="mybatis/OrganizationMapper.xml"></mapper>
     </mappers>
 </configuration>
