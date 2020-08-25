@@ -34,8 +34,8 @@ public class MetricsController {
 
     @PostMapping("/departments/crop")
     public Response listDepartments(@RequestBody OrganizationQry organizationQry){
-        String scenario = "wechat";
-        organizationQry.setBizScenario(BizScenario.valueOf("organization", "getByCropId", scenario));
+        String scenario = "dingTalk";
+        organizationQry.setBizScenario(BizScenario.valueOf("organize", "getByCropId", scenario));
         return organizationService.listDepartmentBy(organizationQry);
     }
 }

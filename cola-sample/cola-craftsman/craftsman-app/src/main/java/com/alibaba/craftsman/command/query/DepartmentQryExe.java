@@ -4,10 +4,11 @@ import com.alibaba.cola.command.Command;
 import com.alibaba.cola.command.CommandExecutorI;
 import com.alibaba.cola.dto.MultiResponse;
 import com.alibaba.cola.dto.Response;
+import com.alibaba.cola.extension.ExtensionExecutor;
+import com.alibaba.craftsman.domain.organization.Department;
 import com.alibaba.craftsman.dto.OrganizationQry;
 import com.alibaba.craftsman.dto.clientobject.DepartmentCO;
-import com.alibaba.craftsman.tunnel.database.DepartmentTunnel;
-import com.alibaba.craftsman.tunnel.database.dataobject.DepartmentDO;
+import com.alibaba.craftsman.extension.OrganizationExtPtI;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -15,20 +16,20 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Command
-public class OrganizationQryExe implements CommandExecutorI<Response, OrganizationQry> {
+@Command
+public class DepartmentQryExe implements CommandExecutorI<Response, OrganizationQry> {
 
     @Autowired
-    private DepartmentTunnel departmentTunnel;
+    private ExtensionExecutor extensionExecutor;
 
     @Override
     public Response execute(OrganizationQry cmd) {
-        List<DepartmentDO> departmentDOList
-                = departmentTunnel.listByCropId(cmd.getCorpId(), cmd.isIncludeDelete() ? "Y" : "N");
-
-        if(!CollectionUtils.isEmpty(departmentDOList)){
+        String cropId = cmd.getCorpId();
+        List<Department> departmentList
+                = extensionExecutor.execute(OrganizationExtPtI.class, cmd.getBizScenario(), ex->ex.listDepartmentBy(cropId));
+        if(!CollectionUtils.isEmpty(departmentList)){
             List<DepartmentCO> departmentCOList = new ArrayList<>();
-            departmentDOList.forEach(t->{
+            departmentList.forEach(t->{
                 DepartmentCO departmentCO = new DepartmentCO();
                 BeanUtils.copyProperties(t, departmentCO);
                 departmentCOList.add(departmentCO);
@@ -37,4 +38,5 @@ public class OrganizationQryExe implements CommandExecutorI<Response, Organizati
         }
         return MultiResponse.buildSuccess();
     }
+
 }

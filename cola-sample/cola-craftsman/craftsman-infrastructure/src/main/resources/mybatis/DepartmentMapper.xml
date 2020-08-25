@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.alibaba.craftsman.tunnel.database.OrganizationTunnel">
+<mapper namespace="com.alibaba.craftsman.tunnel.database.DepartmentTunnel">
     <sql id="ALL_COLUMNS">
         id,
         org_id,
@@ -25,5 +25,18 @@
         <if test='includeDeleted != null and includeDeleted=="N"'>
             and is_deleted = 'n'
         </if>
+    </select>
+    <select id="create" parameterType="DepartmentDO">
+        INSERT INTO department(
+        <include refid="ALL_COLUMNS"/>
+        ) VALUES (
+        null,
+        #{orgId},
+        #{orgName},
+        #{parentId},
+        #{employees},
+        #{cropId},
+        'n'
+        )
     </select>
 </mapper>

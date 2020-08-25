@@ -7,7 +7,10 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface OrganizationTunnel {
+public interface DepartmentTunnel {
+
+    void create(DepartmentDO departmentDO);
 
     List<DepartmentDO> listByCropId(@Param("cropId") String corpId, @Param("includeDeleted") String includeDeleted);
+
 }
