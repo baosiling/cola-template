@@ -16,7 +16,7 @@ public class DefaultExceptionHandler implements ExceptionHandlerI {
 
     private Logger logger = LoggerFactory.getLogger(DefaultExceptionHandler.class);
 
-    private static DefaultExceptionHandler singleton = new DefaultExceptionHandler();
+    public static DefaultExceptionHandler singleton = new DefaultExceptionHandler();
 
     @Override
     public void handleException(Command cmd, Response response, Exception e) {
@@ -44,6 +44,7 @@ public class DefaultExceptionHandler implements ExceptionHandlerI {
             ErrorCodeI errCode = ((BaseException) exception).getErrCode();
             response.setErrCode(errCode.getErrCode());
         }else{
+            logger.error("buildResponse error", exception);
             response.setErrCode(BasicErrorCode.SYS_ERROR.getErrCode());
         }
         response.setErrMessage(exception.getMessage());

@@ -5,12 +5,14 @@ import com.baosiling.cola.exception.framework.BasicErrorCode;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 /**
  * @description: ApplicationContextHelper
  * @author: wangzhx
  * @create: 2020-08-22 14:16
  */
+@Component
 public class ApplicationContextHelper implements ApplicationContextAware {
 
     private static ApplicationContext applicationContext;

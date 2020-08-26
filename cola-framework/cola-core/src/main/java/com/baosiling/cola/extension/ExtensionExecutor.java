@@ -26,7 +26,7 @@ public class ExtensionExecutor extends AbstractComponentExecutor {
     protected <C> C locateComponent(Class<C> targetClz, BizScenario bizScenario) {
         C extension = locateExtension(targetClz, bizScenario);
         logger.debug("[Located Extension]: " + extension.getClass().getSimpleName());
-        return null;
+        return extension;
     }
 
     /**

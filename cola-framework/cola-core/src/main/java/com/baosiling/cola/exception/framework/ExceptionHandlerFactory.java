@@ -2,6 +2,7 @@ package com.baosiling.cola.exception.framework;
 
 import com.baosiling.cola.common.ApplicationContextHelper;
 import com.baosiling.cola.exception.ExceptionHandlerI;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -12,7 +13,11 @@ import org.springframework.context.ApplicationContext;
 public class ExceptionHandlerFactory {
 
     public static ExceptionHandlerI getExceptionHandler(){
+        try{
+            return ApplicationContextHelper.getBean(ExceptionHandlerI.class);
+        }catch(NoSuchBeanDefinitionException e){
+            return DefaultExceptionHandler.singleton;
+        }
 
-        return ApplicationContextHelper.getBean(ExceptionHandlerI.class);
     }
 }
