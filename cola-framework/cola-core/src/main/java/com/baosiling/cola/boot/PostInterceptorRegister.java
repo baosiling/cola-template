@@ -1,6 +1,6 @@
 package com.baosiling.cola.boot;
 
-import com.alibaba.cola.dto.Command;
+import com.baosiling.cola.dto.Command;
 import com.baosiling.cola.boot.AbstractRegister;
 import com.baosiling.cola.boot.RegisterI;
 import com.baosiling.cola.command.CommandHub;

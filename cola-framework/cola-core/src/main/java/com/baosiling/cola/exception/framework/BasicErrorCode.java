@@ -1,6 +1,6 @@
 package com.baosiling.cola.exception.framework;
 
-import com.alibaba.cola.dto.ErrorCodeI;
+import com.baosiling.cola.dto.ErrorCodeI;
 
 /**
  * There are only 3 basic ErrorCode.

@@ -1,7 +1,7 @@
 package com.baosiling.cola.command;
 
 
-import com.alibaba.cola.dto.Command;
+import com.baosiling.cola.dto.Command;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.*;

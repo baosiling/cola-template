@@ -1,6 +1,6 @@
 package com.baosiling.cola.extension;
 
-import com.alibaba.cola.extension.BizScenario;
+import com.baosiling.cola.extension.BizScenario;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.*;

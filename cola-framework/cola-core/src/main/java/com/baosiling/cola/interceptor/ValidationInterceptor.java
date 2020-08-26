@@ -1,6 +1,6 @@
 package com.baosiling.cola.interceptor;
 
-import com.alibaba.cola.dto.Command;
+import com.baosiling.cola.dto.Command;
 import com.baosiling.cola.command.CommandInterceptorI;
 import com.baosiling.cola.command.PreInterceptor;
 import com.baosiling.cola.exception.BizException;

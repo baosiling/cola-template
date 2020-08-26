@@ -1,6 +1,6 @@
 package com.baosiling.cola.domain;
 
-import com.alibaba.cola.event.DomainEventI;
+import com.baosiling.cola.event.DomainEventI;
 
 /**
  * DomainEventServiceI 领域事件服务

@@ -1,6 +1,6 @@
 package com.baosiling.cola.boot;
 
-import com.alibaba.cola.event.EventI;
+import com.baosiling.cola.event.EventI;
 import com.baosiling.cola.common.ApplicationContextHelper;
 import com.baosiling.cola.common.ColaConstant;
 import com.baosiling.cola.event.EventHandlerI;

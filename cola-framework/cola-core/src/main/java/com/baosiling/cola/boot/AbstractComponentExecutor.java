@@ -1,6 +1,6 @@
 package com.baosiling.cola.boot;
 
-import com.alibaba.cola.extension.BizScenario;
+import com.baosiling.cola.extension.BizScenario;
 import com.baosiling.cola.extension.ExtensionCoordinate;
 
 import java.util.function.Consumer;

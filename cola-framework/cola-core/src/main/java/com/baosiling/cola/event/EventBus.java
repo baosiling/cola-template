@@ -1,7 +1,7 @@
 package com.baosiling.cola.event;
 
-import com.alibaba.cola.dto.Response;
-import com.alibaba.cola.event.EventI;
+import com.baosiling.cola.dto.Response;
+import com.baosiling.cola.event.EventI;
 import com.baosiling.cola.exception.framework.BaseException;
 import com.baosiling.cola.exception.framework.BasicErrorCode;
 import com.baosiling.cola.exception.framework.ColaException;

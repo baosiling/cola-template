@@ -1,6 +1,6 @@
 package com.baosiling.cola.extension;
 
-import com.alibaba.cola.extension.BizScenario;
+import com.baosiling.cola.extension.BizScenario;
 import com.baosiling.cola.boot.AbstractComponentExecutor;
 import com.baosiling.cola.common.ColaConstant;
 import com.baosiling.cola.exception.framework.ColaException;

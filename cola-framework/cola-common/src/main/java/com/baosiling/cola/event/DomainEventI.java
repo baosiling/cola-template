@@ -10,6 +10,6 @@ package com.baosiling.cola.event;
  * OpportunityTransferred 表示机会转移完发送出来的领域事件
  *
  */
-public interface DomainEvent extends EventI{
+public interface DomainEventI extends EventI{
 
 }

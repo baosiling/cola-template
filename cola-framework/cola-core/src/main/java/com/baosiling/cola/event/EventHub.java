@@ -1,6 +1,6 @@
 package com.baosiling.cola.event;
 
-import com.alibaba.cola.event.EventI;
+import com.baosiling.cola.event.EventI;
 import com.baosiling.cola.exception.framework.ColaException;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;

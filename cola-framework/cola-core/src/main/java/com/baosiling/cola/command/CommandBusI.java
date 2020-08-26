@@ -1,7 +1,7 @@
 package com.baosiling.cola.command;
 
-import com.alibaba.cola.dto.Command;
-import com.alibaba.cola.dto.Response;
+import com.baosiling.cola.dto.Command;
+import com.baosiling.cola.dto.Response;
 
 /**
  * CommandBus

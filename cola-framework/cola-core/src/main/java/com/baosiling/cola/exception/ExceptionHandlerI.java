@@ -1,7 +1,7 @@
 package com.baosiling.cola.exception;
 
-import com.alibaba.cola.dto.Command;
-import com.alibaba.cola.dto.Response;
+import com.baosiling.cola.dto.Command;
+import com.baosiling.cola.dto.Response;
 
 /**
  * ExceptionHandlerI provide a backdoor that Application can override the default Exception handling

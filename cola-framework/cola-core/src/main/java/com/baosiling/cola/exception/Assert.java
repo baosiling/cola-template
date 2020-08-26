@@ -1,6 +1,6 @@
 package com.baosiling.cola.exception;
 
-import com.alibaba.cola.dto.ErrorCodeI;
+import com.baosiling.cola.dto.ErrorCodeI;
 import com.baosiling.cola.exception.framework.BasicErrorCode;
 import org.springframework.util.CollectionUtils;
 

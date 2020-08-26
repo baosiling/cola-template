@@ -1,6 +1,6 @@
 package com.baosiling.cola.domain;
 
-import com.alibaba.cola.extension.BizScenario;
+import com.baosiling.cola.extension.BizScenario;
 
 /**
  * Entity Object
