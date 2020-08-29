@@ -1,0 +1,15 @@
+server:
+  port: 9001
+
+spring:
+  application:
+    name: eureka-server-cluster
+
+eureka:
+  instance:
+    hostname: eureka-server-01
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka-server-02:9002/eureka/
