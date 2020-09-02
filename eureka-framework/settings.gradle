@@ -1,4 +1,4 @@
-rootProject.name = 'eureka-baosiling'
+rootProject.name = 'eureka-framework'
 include 'erueka-core'
 include 'eureka-client'
 
