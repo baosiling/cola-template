@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -107,7 +108,24 @@ public class InstanceInfo {
     private volatile boolean isUnsecurePortEnabled = true;
     private volatile DataCenterInfo dataCenterInfo;
     private volatile String hostName;
-    private volatile InstanceStatus s;
+    private volatile InstanceStatus status = InstanceStatus.UP;
+    private volatile InstanceStatus overriddenStatus = InstanceStatus.UNKNOWN;
+    @XStreamOmitField
+    private volatile boolean isInstanceInfoDirty = false;
+//TODO    private volatile LeaseInfo leaseInfo;
+    @Auto
+    private volatile Boolean isCoordinatingDiscoveryServer = Boolean.FALSE;
+    @XStreamAlias("metadata")
+    private volatile Map<String, String> metadata;
+    @Auto
+    private volatile Long lastUpdateTimestamp;
+    @Auto
+    private volatile Long lastDirtyTimestamp;
+
+//TODO @Auto    private volatile ActionType actionType;
+    @Auto
+    private volatile String asgName;
+    private String version = VERSION_UNKNOWN;
 
     public enum InstanceStatus {
         UP, //Ready to receive traffic
