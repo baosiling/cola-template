@@ -11,8 +11,10 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -112,7 +114,7 @@ public class InstanceInfo {
     private volatile InstanceStatus overriddenStatus = InstanceStatus.UNKNOWN;
     @XStreamOmitField
     private volatile boolean isInstanceInfoDirty = false;
-//TODO    private volatile LeaseInfo leaseInfo;
+    private volatile LeaseInfo leaseInfo;
     @Auto
     private volatile Boolean isCoordinatingDiscoveryServer = Boolean.FALSE;
     @XStreamAlias("metadata")
@@ -122,10 +124,53 @@ public class InstanceInfo {
     @Auto
     private volatile Long lastDirtyTimestamp;
 
-//TODO @Auto    private volatile ActionType actionType;
+    private volatile ActionType actionType;
     @Auto
     private volatile String asgName;
     private String version = VERSION_UNKNOWN;
+
+    private InstanceInfo() {
+        this.metadata = new ConcurrentHashMap<>();
+        this.lastUpdateTimestamp = System.currentTimeMillis();
+        this.lastDirtyTimestamp = lastUpdateTimestamp;
+    }
+
+    @JsonCreator
+    public InstanceInfo(
+            @JsonProperty("instanceId") String instanceId,
+            @JsonProperty("app") String appName,
+            @JsonProperty("appGroupName") String appGroupName,
+            @JsonProperty("ipAddr") String ipAddr,
+            @JsonProperty("sid") String sid,
+            @JsonProperty("port") PortWrapper port,
+            @JsonProperty("securePort") PortWrapper securePort,
+            @JsonProperty("homePageUrl") String homePageUrl,
+            @JsonProperty("statusPageUrl") String statusPageUrl,
+            @JsonProperty("healthCheckUrl") String healthCheckUrl,
+            @JsonProperty("secureHealthCheckUrl") String secureHealthCheckUrl,
+            @JsonProperty("vipAddress") String vipAddress,
+            @JsonProperty("secureVipAddress") String secureVipAddress,
+            @JsonProperty("countryId") int countryId,
+            @JsonProperty("dataCenterInfo") DataCenterInfo dataCenterInfo,
+            @JsonProperty("hostName") String hostName,
+            @JsonProperty("status") InstanceStatus status,
+            @JsonProperty("overriddenstatus") InstanceStatus overriddenStatus,
+            @JsonProperty("overriddenStatus") InstanceStatus overriddenStatusAlt,
+            @JsonProperty("leaseInfo") LeaseInfo leaseInfo,
+            @JsonProperty("isCoordinatingDiscoveryServer") Boolean isCoordinatingDiscoveryServer,
+            @JsonProperty("metadata") HashMap<String, String> metadata,
+            @JsonProperty("lastUpdatedTimestamp") Long lastUpdateTimestamp,
+            @JsonProperty("lastDirtyTimestamp") Long lastDirtyTimestamp,
+            @JsonProperty("actionType") ActionType actionType,
+            @JsonProperty("asgName") String asgName) {
+
+    }
+
+    public enum ActionType {
+        ADDED, // Added in the discovery server
+        MODIFIED, // Changed in the discovery server
+        DELETED // Deleted from the discovery server
+    }
 
     public enum InstanceStatus {
         UP, //Ready to receive traffic
