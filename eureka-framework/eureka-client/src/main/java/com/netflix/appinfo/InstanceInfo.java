@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -120,7 +121,7 @@ public class InstanceInfo {
     @XStreamAlias("metadata")
     private volatile Map<String, String> metadata;
     @Auto
-    private volatile Long lastUpdateTimestamp;
+    private volatile Long lastUpdatedTimestamp;
     @Auto
     private volatile Long lastDirtyTimestamp;
 
@@ -131,8 +132,8 @@ public class InstanceInfo {
 
     private InstanceInfo() {
         this.metadata = new ConcurrentHashMap<>();
-        this.lastUpdateTimestamp = System.currentTimeMillis();
-        this.lastDirtyTimestamp = lastUpdateTimestamp;
+        this.lastUpdatedTimestamp = System.currentTimeMillis();
+        this.lastDirtyTimestamp = lastUpdatedTimestamp;
     }
 
     @JsonCreator
@@ -159,11 +160,121 @@ public class InstanceInfo {
             @JsonProperty("leaseInfo") LeaseInfo leaseInfo,
             @JsonProperty("isCoordinatingDiscoveryServer") Boolean isCoordinatingDiscoveryServer,
             @JsonProperty("metadata") HashMap<String, String> metadata,
-            @JsonProperty("lastUpdatedTimestamp") Long lastUpdateTimestamp,
+            @JsonProperty("lastUpdatedTimestamp") Long lastUpdatedTimestamp,
             @JsonProperty("lastDirtyTimestamp") Long lastDirtyTimestamp,
             @JsonProperty("actionType") ActionType actionType,
             @JsonProperty("asgName") String asgName) {
+        this.instanceId = instanceId;
+        this.sid = sid;
+        this.appName = StringCache.intern(appName);
+        this.appGroupName = StringCache.intern(appGroupName);
+        this.ipAddr = ipAddr;
+        this.port = port == null ? 0 : port.getPort();
+        this.isUnsecurePortEnabled = port != null && port.isEnabled();
+        this.securePort = securePort == null ? 0 : securePort.getPort();
+        this.isSecurePortEnabled = securePort != null && securePort.isEnabled();
+        this.homePageUrl = homePageUrl;
+        this.statusPageUrl = statusPageUrl;
+        this.healthCheckUrl = healthCheckUrl;
+        this.secureHealthCheckUrl = secureHealthCheckUrl;
+        this.vipAddress = vipAddress;
+        this.secureVipAddress = secureVipAddress;
+        this.countryId = countryId;
+        this.dataCenterInfo = dataCenterInfo;
+        this.hostName = hostName;
+        this.status = status;
+        this.overriddenStatus = overriddenStatus;
+        this.leaseInfo = leaseInfo;
+        this.isCoordinatingDiscoveryServer = isCoordinatingDiscoveryServer;
+        this.lastUpdatedTimestamp = lastUpdatedTimestamp;
+        this.lastDirtyTimestamp = lastDirtyTimestamp;
+        this.actionType = actionType;
+        this.asgName = StringCache.intern(asgName);
 
+        // -----------------------------------------------------------
+        // for compatibility
+
+        if (metadata == null) {
+            this.metadata = Collections.emptyMap();
+        } else if (metadata.size() == 1) {
+            this.metadata = removeMetadataMapLegacyValues(metadata);
+        } else {
+            this.metadata = metadata;
+        }
+
+        if (sid == null) {
+            this.sid = SID_DEFAULT;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "InstanceInfo [instanceId = " + this.instanceId + ", appName = " + this.appName +
+                ", hostName = " + this.hostName + ", status = " + this.status +
+                ", ipAddr = " + this.ipAddr + ", port = " + this.port + ", securePort = " + this.securePort +
+                ", dataCenterInfo = " + this.dataCenterInfo;
+    }
+
+    private Map<String, String> removeMetadataMapLegacyValues(Map<String, String> metadata) {
+        //TODO if(InstanceInfoSerializer.M)
+        return metadata;
+    }
+
+    public InstanceInfo(InstanceInfo ii){
+        this.instanceId = ii.instanceId;
+        this.appName = ii.appName;
+        this.appGroupName = ii.appGroupName;
+        this.ipAddr = ii.ipAddr;
+        this.sid = ii.sid;
+
+        this.port = ii.port;
+        this.securePort = ii.securePort;
+
+        this.homePageUrl = ii.homePageUrl;
+        this.statusPageUrl = ii.statusPageUrl;
+        this.healthCheckUrl = ii.healthCheckUrl;
+        this.secureHealthCheckUrl = ii.secureHealthCheckUrl;
+
+        this.vipAddress = ii.vipAddress;
+        this.secureVipAddress = ii.secureVipAddress;
+        this.statusPageRelativeUrl = ii.statusPageRelativeUrl;
+        this.statusPageExplicitUrl = ii.statusPageExplicitUrl;
+
+        this.healthCheckRelativeUrl = ii.healthCheckRelativeUrl;
+        this.healthCheckSecureExplicitUrl = ii.healthCheckSecureExplicitUrl;
+
+        this.vipAddressUnresolved = ii.vipAddressUnresolved;
+        this.secureVipAddressUnresolved = ii.secureVipAddressUnresolved;
+
+        this.healthCheckExplicitUrl = ii.healthCheckExplicitUrl;
+
+        this.countryId = ii.countryId;
+        this.isSecurePortEnabled = ii.isSecurePortEnabled;
+        this.isUnsecurePortEnabled = ii.isUnsecurePortEnabled;
+
+        this.dataCenterInfo = ii.dataCenterInfo;
+
+        this.hostName = ii.hostName;
+
+        this.status = ii.status;
+        this.overriddenStatus = ii.overriddenStatus;
+
+        this.isInstanceInfoDirty = ii.isInstanceInfoDirty;
+
+        this.leaseInfo = ii.leaseInfo;
+
+        this.isCoordinatingDiscoveryServer = ii.isCoordinatingDiscoveryServer;
+
+        this.metadata = ii.metadata;
+
+        this.lastUpdatedTimestamp = ii.lastUpdatedTimestamp;
+        this.lastDirtyTimestamp = ii.lastDirtyTimestamp;
+
+        this.actionType = ii.actionType;
+
+        this.asgName = ii.asgName;
+
+        this.version = ii.version;
     }
 
     public enum ActionType {
