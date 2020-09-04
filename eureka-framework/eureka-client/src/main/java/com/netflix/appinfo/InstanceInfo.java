@@ -411,6 +411,187 @@ public class InstanceInfo {
             return this;
         }
 
+        /**
+         * Sets the fully qualified hostname of this running instance. This is mostly used in
+         * constructing the {@link java.net.URL} for communicating with the instance.
+         * @param hostName the host name of the instance.
+         * @return the {@link InstanceInfo} builder.
+         */
+        public Builder setHostName(String hostName){
+            if(StringUtils.isEmpty(hostName)){
+                logger.warn("Passed in hostname is blank, not setting it");
+                return this;
+            }
+
+            String existingHostName = result.hostName;
+            result.hostName = hostName;
+            if(existingHostName != null && !hostName.equals(existingHostName)){
+                //TODO refreshStatusPageUrl().refreshHealthCheckUrl().refreshVIPAddress().refreshSecureVIPAddress();
+            }
+            return this;
+        }
+
+        private Builder refreshStatusPageUrl() {
+            //TODO
+            return this;
+        }
+
+        /**
+         * Sets the status of the instance.If the status is UP, that is when the instance
+         * is ready to service requests.
+         * @param status the {@link InstanceStatus} of the instance.
+         * @return the {@link InstanceInfo} builder.
+         */
+        public Builder setStatus(InstanceStatus status){
+            result.status = status;
+            return this;
+        }
+
+        /**
+         * Sets the status overridden by some other external process.This is
+         * mostly used in putting an instance out of service to block traffic to it.
+         *
+         * @param status the overridden {@link InstanceStatus} of the instance.
+         * @return the builder
+         */
+        public Builder setOverriddenStatus(InstanceStatus status){
+            result.overriddenStatus = status;
+            return this;
+        }
+
+        /**
+         * Sets the ip address of this running instance.
+         * @param ip the ip address of the instance
+         * @return the builder
+         */
+        public Builder setIPAddr(String ip){
+            result.ipAddr = ip;
+            return this;
+        }
+
+        /**
+         * Sets the identity of this application instance.
+         *
+         * @param sid the sid of the instance.
+         * @return the {@link InstanceInfo} builder.
+         */
+        @Deprecated
+        public Builder setSID(String sid){
+            result.sid = sid;
+            return this;
+        }
+
+        /**
+         * Sets the port number that is used to service requests.
+         * @param port
+         * @return
+         */
+        public Builder setPort(int port){
+            result.port = port;
+            return this;
+        }
+
+        /**
+         * Sets the secure port that is used to service requests.
+         * @param port
+         * @return
+         */
+        public Builder setSecurePort(int port){
+            result.securePort = port;
+            return this;
+        }
+
+        /**
+         * Enabled or disable secure/non-secure ports.
+         *
+         * @param type
+         * @param isEnable
+         * @return
+         */
+        public Builder enablePort(PortType type, boolean isEnable){
+            if(type == PortType.SECURE){
+                result.isSecurePortEnabled = isEnable;
+            }else{
+                result.isUnsecurePortEnabled = isEnable;
+            }
+            return this;
+        }
+
+        public Builder setCountryId(int id){
+            result.countryId = id;
+            return this;
+        }
+
+        /**
+         * Sets the absolute home page {@link java.net.URL} for this instance.The users
+         * can provide the <code>homePageUrlPath</code> if the home page resides
+         * in the same instance talking to discovery, else in the cases where the instance is
+         * a proxy for some other server, it can provide the full {@link java.net.URL}. If the
+         * full {@link java.net.URL} is provided it takes precedence.
+         *
+         * <p>
+         * The full {@link java.net.URL} should follow the format
+         * http://${netflix.appinfo.hostname}:7001/ where the value
+         * ${netflix.appinfo.hostname} is replaces at runtime.
+         * </p>
+         *
+         * @param relativeUrl the relative url path of the home page.
+         * @param explicitUrl The full {@link java.net.URL} for the home page
+         * @return the builder
+         */
+        public Builder setHomePageUrl(String relativeUrl, String explicitUrl){
+            String hostNameInterpolationExpression = "${" + namespace + "hostname}";
+            if(explicitUrl != null){
+                result.homePageUrl = explicitUrl.replace(hostNameInterpolationExpression, result.hostName);
+            }else if(relativeUrl != null){
+                result.homePageUrl = HTTP_PROTOCOL + result.hostName + COLON + result.port
+                        + relativeUrl;
+            }
+            return this;
+        }
+
+        /**
+         * {@link #setHomePageUrl(String, String)} has complex logic that should not be invoked
+         * when we deserialize {@link InstanceInfo} object, or home page URL is formatted already
+         * by the client.
+         * @param homePageUrl
+         * @return
+         */
+        public Builder setHomePageUrlForDeser(String homePageUrl) {
+            result.homePageUrl = homePageUrl;
+            return this;
+        }
+
+        /**
+         * Sets the absolute status page {@link java.net.URL} for this instance.
+         * The users can provide the <code>statusPageUrlPath</code> if the status page
+         * resides in the same instance talking to discovery, else in the cases where the
+         * instance is a proxy for some other server,it can provide the full {@link java.net.URL}.
+         * If the full {@link java.net.URL} is provided it takes precedence.
+         *
+         * <P>
+         * The full {@link java.net.URL} should follow the format
+         * http://${netflix.appinfo.hostname}:7001/Status where the value
+         * ${netflix.appinfo.hostname} is replaced at runtime.
+         * </P>
+         * @param relativeUrl the {@link java.net.URL} path for status page for this instance
+         * @param explicitUrl the full {@link java.net.URL} for the status page
+         * @return
+         */
+        public Builder setStatusPageUrl(String relativeUrl, String explicitUrl){
+            String hostNameInterpolationExpression = "${" + namespace + "hostname}";
+            result.statusPageRelativeUrl = relativeUrl;
+            result.statusPageExplicitUrl = explicitUrl;
+            if (explicitUrl != null) {
+                result.statusPageUrl = explicitUrl.replace(
+                        hostNameInterpolationExpression, result.hostName);
+            } else if (relativeUrl != null) {
+                result.statusPageUrl = HTTP_PROTOCOL + result.hostName + COLON
+                        + result.port + relativeUrl;
+            }
+            return this;
+        }
+
         //TODO
 
     }
