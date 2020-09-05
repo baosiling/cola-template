@@ -339,7 +339,7 @@ public class InstanceInfo {
     public static final class Builder {
         private static final String COLON = ":";
         private static final String HTTPS_PROTOCOL = "https://";
-        private static final String HTTP_PROTOCOL = "https://";
+        private static final String HTTP_PROTOCOL = "http://";
         private final Function<String, String> intern;
 
         private static final class LazyHolder {
@@ -426,13 +426,8 @@ public class InstanceInfo {
             String existingHostName = result.hostName;
             result.hostName = hostName;
             if(existingHostName != null && !hostName.equals(existingHostName)){
-                //TODO refreshStatusPageUrl().refreshHealthCheckUrl().refreshVIPAddress().refreshSecureVIPAddress();
+                refreshStatusPageUrl().refreshHealthCheckUrl().refreshVIPAddress().refreshSecureVIPAddress();
             }
-            return this;
-        }
-
-        private Builder refreshStatusPageUrl() {
-            //TODO
             return this;
         }
 
@@ -592,8 +587,236 @@ public class InstanceInfo {
             return this;
         }
 
-        //TODO
+        /**
+         * {@link #setStatusPageUrl(String, String)} has complex logic that should not be invoked when
+         * we deserialize {@link InstanceInfo} object, or status page URL is formatted already by the client.
+         * @param statusPageUrl
+         * @return
+         */
+        public Builder setStatusPageUrlForDeser(String statusPageUrl){
+            result.statusPageUrl = statusPageUrl;
+            return this;
+        }
 
+        /**
+         * Sets the absolute health check {@link java.net.URL} for this instance for both
+         * secure and non-secure communication. The users can provide the <code>healthCheckUrlPath</code>
+         * if the health check page resides in the same instance talking to discovery,else in the cases where the instance
+         * is a proxy for some other server, it can provide the full {@link java.net.URL}.
+         * If the full {@link java.net.URL} is provided it takes precedence.
+         * <p>
+         * The full {@link java.net.URL} should follow the format http://${netflix.appinfo.hostname}:7001/healthcheck
+         * where the value ${netflix.appinfo.hostname} is replaced at runtime.
+         * </p>
+         * @param relativeUrl the {@link java.net.URL} path for health check page for this instance.
+         * @param explicitUrl The full {@link java.net.URL} for the health check page.
+         * @param secureExplicitUrl the full secure explicit url of the health check page
+         * @return the builder
+         */
+        public Builder setHealthCheckUrls(String relativeUrl, String explicitUrl, String secureExplicitUrl){
+            String hostNameInterpolationExpression = "${" + namespace + "hostname}";
+            result.healthCheckRelativeUrl =relativeUrl;
+            result.healthCheckExplicitUrl = explicitUrl;
+            result.healthCheckSecureExplicitUrl = secureExplicitUrl;
+            if(explicitUrl != null){
+                result.healthCheckUrl = explicitUrl.replace(hostNameInterpolationExpression, result.hostName);
+            }else if(result.isUnsecurePortEnabled){
+                result.healthCheckUrl = HTTP_PROTOCOL + result.hostName + COLON + result.port + relativeUrl;
+            }
+
+            if(secureExplicitUrl != null){
+                result.secureHealthCheckUrl = secureExplicitUrl.replace(hostNameInterpolationExpression, result.hostName);
+            }else if(result.isSecurePortEnabled){
+                result.secureHealthCheckUrl = HTTPS_PROTOCOL + result.hostName + COLON + result.securePort + relativeUrl;
+            }
+            return this;
+        }
+
+        /**
+         * {@link #setHealthCheckUrls(String, String, String)} has complex logic that should not be invoked when
+         * we deserialize {@link InstanceInfo} object, or health check URLs are formatted already by the client.
+         */
+        public Builder setHealthCheckUrlsForDeser(String healthCheckUrl, String secureHealthCheckUrl){
+            if(healthCheckUrl != null){
+                result.healthCheckUrl = healthCheckUrl;
+            }
+            if(secureHealthCheckUrl != null){
+                result.secureHealthCheckUrl = secureHealthCheckUrl;
+            }
+            return this;
+        }
+
+        /**
+         * Sets the Virtual Internet Protocol address for this instance.The
+         * address should follow the format <code><hostname:port><</code> This
+         * address needs to be resolved into a real address for communicating with this instance.
+         * @param vipAddress The Virtual Internet Protocol Address for this instance.
+         * @return the builder
+         */
+        public Builder setVIPAddress(final String vipAddress){
+            result.vipAddressUnresolved = intern.apply(vipAddress);
+            result.vipAddress = intern.apply(vipAddressResolver.resolveDeploymentContextBasedVipAddress(vipAddress));
+            return this;
+        }
+
+        /**
+         * Setter used during deserialization process, that does not do macro expansion on the provided value.
+         * @param vipAddress
+         * @return
+         */
+        public Builder setVIPAddressDeser(String vipAddress){
+            result.vipAddress = vipAddress;
+            return this;
+        }
+
+        /**
+         * Sets the Secure Virtual Internet Protocol address for this instance.
+         * The address should follow the format <hostname:port> This address
+         * needs to be resolved into a real address for communicating with this
+         * instance.
+         *
+         * @param secureVIPAddress the secure VIP address of the instance.
+         * @return - Builder instance
+         */
+        public Builder setSecureVIPAddress(final String secureVIPAddress){
+            result.secureVipAddressUnresolved = intern.apply(secureVIPAddress);
+            result.secureVipAddress = intern.apply(vipAddressResolver.resolveDeploymentContextBasedVipAddress(secureVIPAddress));
+            return this;
+        }
+
+        /**
+         * Setter used during deserialization process, that does not do macro expansion on the provided value.
+         */
+        public Builder setSecureVIPAddressDeser(String secureVIPAddress){
+            result.secureVipAddress = secureVIPAddress;
+            return this;
+        }
+
+        /**
+         * Sets the data center information
+         * @param dataCenter the data center information for where the instance is running.
+         * @return
+         */
+        public Builder setDataCenterInfo(DataCenterInfo dataCenter){
+            result.dataCenterInfo =dataCenter;
+            return this;
+        }
+
+        /**
+         * Set the instance lease information.
+         * @param leaseInfo the lease information for this instance.
+         * @return
+         */
+        public Builder setLeaseInfo(LeaseInfo leaseInfo){
+            result.leaseInfo = leaseInfo;
+            return this;
+        }
+
+        /**
+         * Add arbitrary metadata to running instance.
+         * @param key
+         * @param val
+         * @return
+         */
+        public Builder add(String key, String val){
+            result.metadata.put(key, val);
+            return this;
+        }
+
+        /**
+         * replace the existing metadata map with a new one.
+         * @param mt
+         * @return
+         */
+        public Builder setMetadata(Map<String, String> mt){
+            result.metadata = mt;
+            return this;
+        }
+
+        /**
+         * returns the encapsulated instance info even it is not built fully.
+         * @return
+         */
+        public InstanceInfo getRawInstance(){
+            return result;
+        }
+
+        /**
+         * Build the {@link InstanceInfo} object
+         * @return
+         */
+        public InstanceInfo build(){
+            if(!isInitialized()){
+                throw new IllegalStateException("name is required!");
+            }
+            return result;
+        }
+
+        private boolean isInitialized() {
+            return result.appName != null;
+        }
+
+        /**
+         * Sets the AWS ASG name for this instance.
+         * @param asgName
+         * @return
+         */
+        public Builder setASGName(String asgName){
+            result.asgName = asgName;
+            return this;
+        }
+
+        private Builder refreshStatusPageUrl() {
+            setStatusPageUrl(result.statusPageRelativeUrl, result.statusPageExplicitUrl);
+            return this;
+        }
+
+        private Builder refreshHealthCheckUrl(){
+            setHealthCheckUrls(result.healthCheckRelativeUrl, result.healthCheckExplicitUrl, result.healthCheckSecureExplicitUrl);
+            return this;
+        }
+
+        private Builder refreshSecureVIPAddress(){
+            setSecureVIPAddress(result.secureVipAddressUnresolved);
+            return this;
+        }
+
+        private Builder refreshVIPAddress(){
+            setVIPAddress(result.vipAddressUnresolved);
+            return this;
+        }
+
+        public Builder setIsCoordinatingDiscoveryServer(boolean isCoordinatingDiscoveryServer){
+            result.isCoordinatingDiscoveryServer = isCoordinatingDiscoveryServer;
+            return this;
+        }
+
+        public Builder setLastUpdatedTimestamp(long lastUpdatedTimestamp){
+            result.lastUpdatedTimestamp = lastUpdatedTimestamp;
+            return this;
+        }
+        public Builder setLastDirtyTimestamp(long lastDirtyTimestamp){
+            result.lastDirtyTimestamp = lastDirtyTimestamp;
+            return this;
+        }
+
+        public Builder setActionType(ActionType actionType){
+            result.actionType = actionType;
+            return this;
+        }
+
+        public Builder setNamespace(String namespace){
+            this.namespace = namespace.endsWith(".") ? namespace : namespace + ".";
+            return this;
+        }
+    }
+
+    /**
+     * return the raw the instanceId. for compatibility, prefer to use {@link getId()}
+     * @return
+     */
+    public String getInstanceId(){
+        return instanceId;
     }
 
     @JsonIgnore
