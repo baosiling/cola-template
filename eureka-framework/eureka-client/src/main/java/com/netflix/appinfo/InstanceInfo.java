@@ -7,14 +7,13 @@ import com.netflix.discovery.converters.Auto;
 import com.netflix.discovery.util.StringCache;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.rmi.dgc.Lease;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -220,7 +219,7 @@ public class InstanceInfo {
         return metadata;
     }
 
-    public InstanceInfo(InstanceInfo ii){
+    public InstanceInfo(InstanceInfo ii) {
         this.instanceId = ii.instanceId;
         this.appName = ii.appName;
         this.appGroupName = ii.appGroupName;
@@ -414,18 +413,19 @@ public class InstanceInfo {
         /**
          * Sets the fully qualified hostname of this running instance. This is mostly used in
          * constructing the {@link java.net.URL} for communicating with the instance.
+         *
          * @param hostName the host name of the instance.
          * @return the {@link InstanceInfo} builder.
          */
-        public Builder setHostName(String hostName){
-            if(StringUtils.isEmpty(hostName)){
+        public Builder setHostName(String hostName) {
+            if (StringUtils.isEmpty(hostName)) {
                 logger.warn("Passed in hostname is blank, not setting it");
                 return this;
             }
 
             String existingHostName = result.hostName;
             result.hostName = hostName;
-            if(existingHostName != null && !hostName.equals(existingHostName)){
+            if (existingHostName != null && !hostName.equals(existingHostName)) {
                 refreshStatusPageUrl().refreshHealthCheckUrl().refreshVIPAddress().refreshSecureVIPAddress();
             }
             return this;
@@ -434,10 +434,11 @@ public class InstanceInfo {
         /**
          * Sets the status of the instance.If the status is UP, that is when the instance
          * is ready to service requests.
+         *
          * @param status the {@link InstanceStatus} of the instance.
          * @return the {@link InstanceInfo} builder.
          */
-        public Builder setStatus(InstanceStatus status){
+        public Builder setStatus(InstanceStatus status) {
             result.status = status;
             return this;
         }
@@ -449,17 +450,18 @@ public class InstanceInfo {
          * @param status the overridden {@link InstanceStatus} of the instance.
          * @return the builder
          */
-        public Builder setOverriddenStatus(InstanceStatus status){
+        public Builder setOverriddenStatus(InstanceStatus status) {
             result.overriddenStatus = status;
             return this;
         }
 
         /**
          * Sets the ip address of this running instance.
+         *
          * @param ip the ip address of the instance
          * @return the builder
          */
-        public Builder setIPAddr(String ip){
+        public Builder setIPAddr(String ip) {
             result.ipAddr = ip;
             return this;
         }
@@ -471,27 +473,29 @@ public class InstanceInfo {
          * @return the {@link InstanceInfo} builder.
          */
         @Deprecated
-        public Builder setSID(String sid){
+        public Builder setSID(String sid) {
             result.sid = sid;
             return this;
         }
 
         /**
          * Sets the port number that is used to service requests.
+         *
          * @param port
          * @return
          */
-        public Builder setPort(int port){
+        public Builder setPort(int port) {
             result.port = port;
             return this;
         }
 
         /**
          * Sets the secure port that is used to service requests.
+         *
          * @param port
          * @return
          */
-        public Builder setSecurePort(int port){
+        public Builder setSecurePort(int port) {
             result.securePort = port;
             return this;
         }
@@ -503,16 +507,16 @@ public class InstanceInfo {
          * @param isEnable
          * @return
          */
-        public Builder enablePort(PortType type, boolean isEnable){
-            if(type == PortType.SECURE){
+        public Builder enablePort(PortType type, boolean isEnable) {
+            if (type == PortType.SECURE) {
                 result.isSecurePortEnabled = isEnable;
-            }else{
+            } else {
                 result.isUnsecurePortEnabled = isEnable;
             }
             return this;
         }
 
-        public Builder setCountryId(int id){
+        public Builder setCountryId(int id) {
             result.countryId = id;
             return this;
         }
@@ -534,11 +538,11 @@ public class InstanceInfo {
          * @param explicitUrl The full {@link java.net.URL} for the home page
          * @return the builder
          */
-        public Builder setHomePageUrl(String relativeUrl, String explicitUrl){
+        public Builder setHomePageUrl(String relativeUrl, String explicitUrl) {
             String hostNameInterpolationExpression = "${" + namespace + "hostname}";
-            if(explicitUrl != null){
+            if (explicitUrl != null) {
                 result.homePageUrl = explicitUrl.replace(hostNameInterpolationExpression, result.hostName);
-            }else if(relativeUrl != null){
+            } else if (relativeUrl != null) {
                 result.homePageUrl = HTTP_PROTOCOL + result.hostName + COLON + result.port
                         + relativeUrl;
             }
@@ -549,6 +553,7 @@ public class InstanceInfo {
          * {@link #setHomePageUrl(String, String)} has complex logic that should not be invoked
          * when we deserialize {@link InstanceInfo} object, or home page URL is formatted already
          * by the client.
+         *
          * @param homePageUrl
          * @return
          */
@@ -564,16 +569,17 @@ public class InstanceInfo {
          * instance is a proxy for some other server,it can provide the full {@link java.net.URL}.
          * If the full {@link java.net.URL} is provided it takes precedence.
          *
-         * <P>
+         * <p>
          * The full {@link java.net.URL} should follow the format
          * http://${netflix.appinfo.hostname}:7001/Status where the value
          * ${netflix.appinfo.hostname} is replaced at runtime.
          * </P>
+         *
          * @param relativeUrl the {@link java.net.URL} path for status page for this instance
          * @param explicitUrl the full {@link java.net.URL} for the status page
          * @return
          */
-        public Builder setStatusPageUrl(String relativeUrl, String explicitUrl){
+        public Builder setStatusPageUrl(String relativeUrl, String explicitUrl) {
             String hostNameInterpolationExpression = "${" + namespace + "hostname}";
             result.statusPageRelativeUrl = relativeUrl;
             result.statusPageExplicitUrl = explicitUrl;
@@ -590,10 +596,11 @@ public class InstanceInfo {
         /**
          * {@link #setStatusPageUrl(String, String)} has complex logic that should not be invoked when
          * we deserialize {@link InstanceInfo} object, or status page URL is formatted already by the client.
+         *
          * @param statusPageUrl
          * @return
          */
-        public Builder setStatusPageUrlForDeser(String statusPageUrl){
+        public Builder setStatusPageUrlForDeser(String statusPageUrl) {
             result.statusPageUrl = statusPageUrl;
             return this;
         }
@@ -608,25 +615,26 @@ public class InstanceInfo {
          * The full {@link java.net.URL} should follow the format http://${netflix.appinfo.hostname}:7001/healthcheck
          * where the value ${netflix.appinfo.hostname} is replaced at runtime.
          * </p>
-         * @param relativeUrl the {@link java.net.URL} path for health check page for this instance.
-         * @param explicitUrl The full {@link java.net.URL} for the health check page.
+         *
+         * @param relativeUrl       the {@link java.net.URL} path for health check page for this instance.
+         * @param explicitUrl       The full {@link java.net.URL} for the health check page.
          * @param secureExplicitUrl the full secure explicit url of the health check page
          * @return the builder
          */
-        public Builder setHealthCheckUrls(String relativeUrl, String explicitUrl, String secureExplicitUrl){
+        public Builder setHealthCheckUrls(String relativeUrl, String explicitUrl, String secureExplicitUrl) {
             String hostNameInterpolationExpression = "${" + namespace + "hostname}";
-            result.healthCheckRelativeUrl =relativeUrl;
+            result.healthCheckRelativeUrl = relativeUrl;
             result.healthCheckExplicitUrl = explicitUrl;
             result.healthCheckSecureExplicitUrl = secureExplicitUrl;
-            if(explicitUrl != null){
+            if (explicitUrl != null) {
                 result.healthCheckUrl = explicitUrl.replace(hostNameInterpolationExpression, result.hostName);
-            }else if(result.isUnsecurePortEnabled){
+            } else if (result.isUnsecurePortEnabled) {
                 result.healthCheckUrl = HTTP_PROTOCOL + result.hostName + COLON + result.port + relativeUrl;
             }
 
-            if(secureExplicitUrl != null){
+            if (secureExplicitUrl != null) {
                 result.secureHealthCheckUrl = secureExplicitUrl.replace(hostNameInterpolationExpression, result.hostName);
-            }else if(result.isSecurePortEnabled){
+            } else if (result.isSecurePortEnabled) {
                 result.secureHealthCheckUrl = HTTPS_PROTOCOL + result.hostName + COLON + result.securePort + relativeUrl;
             }
             return this;
@@ -636,11 +644,11 @@ public class InstanceInfo {
          * {@link #setHealthCheckUrls(String, String, String)} has complex logic that should not be invoked when
          * we deserialize {@link InstanceInfo} object, or health check URLs are formatted already by the client.
          */
-        public Builder setHealthCheckUrlsForDeser(String healthCheckUrl, String secureHealthCheckUrl){
-            if(healthCheckUrl != null){
+        public Builder setHealthCheckUrlsForDeser(String healthCheckUrl, String secureHealthCheckUrl) {
+            if (healthCheckUrl != null) {
                 result.healthCheckUrl = healthCheckUrl;
             }
-            if(secureHealthCheckUrl != null){
+            if (secureHealthCheckUrl != null) {
                 result.secureHealthCheckUrl = secureHealthCheckUrl;
             }
             return this;
@@ -650,10 +658,11 @@ public class InstanceInfo {
          * Sets the Virtual Internet Protocol address for this instance.The
          * address should follow the format <code><hostname:port><</code> This
          * address needs to be resolved into a real address for communicating with this instance.
+         *
          * @param vipAddress The Virtual Internet Protocol Address for this instance.
          * @return the builder
          */
-        public Builder setVIPAddress(final String vipAddress){
+        public Builder setVIPAddress(final String vipAddress) {
             result.vipAddressUnresolved = intern.apply(vipAddress);
             result.vipAddress = intern.apply(vipAddressResolver.resolveDeploymentContextBasedVipAddress(vipAddress));
             return this;
@@ -661,10 +670,11 @@ public class InstanceInfo {
 
         /**
          * Setter used during deserialization process, that does not do macro expansion on the provided value.
+         *
          * @param vipAddress
          * @return
          */
-        public Builder setVIPAddressDeser(String vipAddress){
+        public Builder setVIPAddressDeser(String vipAddress) {
             result.vipAddress = vipAddress;
             return this;
         }
@@ -678,7 +688,7 @@ public class InstanceInfo {
          * @param secureVIPAddress the secure VIP address of the instance.
          * @return - Builder instance
          */
-        public Builder setSecureVIPAddress(final String secureVIPAddress){
+        public Builder setSecureVIPAddress(final String secureVIPAddress) {
             result.secureVipAddressUnresolved = intern.apply(secureVIPAddress);
             result.secureVipAddress = intern.apply(vipAddressResolver.resolveDeploymentContextBasedVipAddress(secureVIPAddress));
             return this;
@@ -687,66 +697,72 @@ public class InstanceInfo {
         /**
          * Setter used during deserialization process, that does not do macro expansion on the provided value.
          */
-        public Builder setSecureVIPAddressDeser(String secureVIPAddress){
+        public Builder setSecureVIPAddressDeser(String secureVIPAddress) {
             result.secureVipAddress = secureVIPAddress;
             return this;
         }
 
         /**
          * Sets the data center information
+         *
          * @param dataCenter the data center information for where the instance is running.
          * @return
          */
-        public Builder setDataCenterInfo(DataCenterInfo dataCenter){
-            result.dataCenterInfo =dataCenter;
+        public Builder setDataCenterInfo(DataCenterInfo dataCenter) {
+            result.dataCenterInfo = dataCenter;
             return this;
         }
 
         /**
          * Set the instance lease information.
+         *
          * @param leaseInfo the lease information for this instance.
          * @return
          */
-        public Builder setLeaseInfo(LeaseInfo leaseInfo){
+        public Builder setLeaseInfo(LeaseInfo leaseInfo) {
             result.leaseInfo = leaseInfo;
             return this;
         }
 
         /**
          * Add arbitrary metadata to running instance.
+         *
          * @param key
          * @param val
          * @return
          */
-        public Builder add(String key, String val){
+        public Builder add(String key, String val) {
             result.metadata.put(key, val);
             return this;
         }
 
         /**
          * replace the existing metadata map with a new one.
+         *
          * @param mt
          * @return
          */
-        public Builder setMetadata(Map<String, String> mt){
+        public Builder setMetadata(Map<String, String> mt) {
             result.metadata = mt;
             return this;
         }
 
         /**
          * returns the encapsulated instance info even it is not built fully.
+         *
          * @return
          */
-        public InstanceInfo getRawInstance(){
+        public InstanceInfo getRawInstance() {
             return result;
         }
 
         /**
          * Build the {@link InstanceInfo} object
+         *
          * @return
          */
-        public InstanceInfo build(){
-            if(!isInitialized()){
+        public InstanceInfo build() {
+            if (!isInitialized()) {
                 throw new IllegalStateException("name is required!");
             }
             return result;
@@ -758,10 +774,11 @@ public class InstanceInfo {
 
         /**
          * Sets the AWS ASG name for this instance.
+         *
          * @param asgName
          * @return
          */
-        public Builder setASGName(String asgName){
+        public Builder setASGName(String asgName) {
             result.asgName = asgName;
             return this;
         }
@@ -771,54 +788,107 @@ public class InstanceInfo {
             return this;
         }
 
-        private Builder refreshHealthCheckUrl(){
+        private Builder refreshHealthCheckUrl() {
             setHealthCheckUrls(result.healthCheckRelativeUrl, result.healthCheckExplicitUrl, result.healthCheckSecureExplicitUrl);
             return this;
         }
 
-        private Builder refreshSecureVIPAddress(){
+        private Builder refreshSecureVIPAddress() {
             setSecureVIPAddress(result.secureVipAddressUnresolved);
             return this;
         }
 
-        private Builder refreshVIPAddress(){
+        private Builder refreshVIPAddress() {
             setVIPAddress(result.vipAddressUnresolved);
             return this;
         }
 
-        public Builder setIsCoordinatingDiscoveryServer(boolean isCoordinatingDiscoveryServer){
+        public Builder setIsCoordinatingDiscoveryServer(boolean isCoordinatingDiscoveryServer) {
             result.isCoordinatingDiscoveryServer = isCoordinatingDiscoveryServer;
             return this;
         }
 
-        public Builder setLastUpdatedTimestamp(long lastUpdatedTimestamp){
+        public Builder setLastUpdatedTimestamp(long lastUpdatedTimestamp) {
             result.lastUpdatedTimestamp = lastUpdatedTimestamp;
             return this;
         }
-        public Builder setLastDirtyTimestamp(long lastDirtyTimestamp){
+
+        public Builder setLastDirtyTimestamp(long lastDirtyTimestamp) {
             result.lastDirtyTimestamp = lastDirtyTimestamp;
             return this;
         }
 
-        public Builder setActionType(ActionType actionType){
+        public Builder setActionType(ActionType actionType) {
             result.actionType = actionType;
             return this;
         }
 
-        public Builder setNamespace(String namespace){
+        public Builder setNamespace(String namespace) {
             this.namespace = namespace.endsWith(".") ? namespace : namespace + ".";
             return this;
         }
     }
 
     /**
-     * return the raw the instanceId. for compatibility, prefer to use {@link getId()}
+     * return the raw the instanceId. for compatibility, prefer to use {@link #getId()}
+     *
      * @return
      */
-    public String getInstanceId(){
+    public String getInstanceId() {
         return instanceId;
     }
 
+    /**
+     * return the name of the application registering with discovery.
+     *
+     * @return the string denoting the application name.
+     */
+    @JsonProperty("app")
+    public String getAppName() {
+        return appName;
+    }
+
+    public String getAppGroupName() {
+        return appGroupName;
+    }
+
+    /**
+     * return the default network address to connect to this instance. Typically this would be the fully
+     * qualified public hostname.
+     * <p>
+     * however the user can configure the {@link EurekaInstanceConfig} to change the default value used
+     * to populate this field using the {@link EurekaInstanceConfig#getDefaultAddressResolutionOrder()} property.
+     * <p>
+     * if a use case need more specific hostnames or ips, please use data from {@link #getDataCenterInf()}
+     * <p>
+     * For legacy reasons, it is difficult to introduce a new address-type field that is agnostic to hostnam/ip.
+     *
+     * @return the default address (by default the public hostname)
+     */
+    public String getHostName() {
+        return hostName;
+    }
+
+    @Deprecated
+    public void setSID(String sid) {
+        this.sid = sid;
+        setIsDirty();
+    }
+
+    @JsonProperty("sid")
+    @Deprecated
+    public String getSID() {
+        return sid;
+    }
+
+    /**
+     * returns the unique id of the instance.
+     * (Note) now that id is set at creation time within the instanceProvider, why do the other checks?
+     * This is still necessary for  backwards compatibility when upgrading in a deployment with multiple
+     * client versions (some with the change,some without)
+     *
+     * @return
+     */
     @JsonIgnore
     public String getId() {
         if (!StringUtils.isEmpty(instanceId)) {
@@ -830,6 +900,373 @@ public class InstanceInfo {
             }
         }
         return hostName;
+    }
+
+    /**
+     * return the ip address of the instance
+     *
+     * @return the ip address, in AWS scenario it is a private IP.
+     */
+    @JsonProperty("ipAddr")
+    public String getIpAddr() {
+        return ipAddr;
+    }
+
+    /**
+     * returns the port number that is used for servicing requests.
+     *
+     * @return the non-secure port number.
+     */
+    @JsonIgnore
+    public int getPort() {
+        return port;
+    }
+
+    /**
+     * returns the status of the instance.
+     *
+     * @return the status indicating whether the instance can handle requests.
+     */
+    public InstanceStatus getStatus() {
+        return status;
+    }
+
+    /**
+     * Returns the overridden status if any of the instance.
+     *
+     * @return the status indicating whether an external process has changed the status
+     */
+    public InstanceStatus getOverriddenStatus() {
+        return overriddenStatus;
+    }
+
+    /**
+     * returns data center information identifying if it is AWS or not
+     *
+     * @return the data center information.
+     */
+    public DataCenterInfo getDataCenterInfo() {
+        return dataCenterInfo;
+    }
+
+    /**
+     * returns the lease information regarding when it expires.
+     *
+     * @return
+     */
+    public LeaseInfo getLeaseInfo() {
+        return leaseInfo;
+    }
+
+    /**
+     * Sets the lease information regarding when it expires.
+     *
+     * @param info the lease information of this instance.
+     */
+    public void setLeaseInfo(LeaseInfo info) {
+        leaseInfo = info;
+    }
+
+    /**
+     * Returns all application specific metadata set on the instance.
+     *
+     * @return application specific metadata.
+     */
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
+    @Deprecated
+    public int getCountryId() {
+        return countryId;
+    }
+
+    @JsonIgnore
+    public int getSecurePort() {
+        return securePort;
+    }
+
+    public boolean isPortEnable(PortType type) {
+        if (type == PortType.SECURE) {
+            return isSecurePortEnabled;
+        } else {
+            return isUnsecurePortEnabled;
+        }
+    }
+
+    /**
+     * returns the time elapsed epoch since the instance status has been last updated.
+     *
+     * @return
+     */
+    public long getLastUpdatedTimestamp() {
+        return lastUpdatedTimestamp;
+    }
+
+    /**
+     * Set the updated time for this instance when the status was updated.
+     */
+    public void setLastUpdatedTimestamp() {
+        lastDirtyTimestamp = System.currentTimeMillis();
+    }
+
+    public String getHomePageUrl() {
+        return homePageUrl;
+    }
+
+    public String getStatusPageUrl() {
+        return statusPageUrl;
+    }
+
+    /**
+     * Gets the absolute URLs for the health check page for both secure an non-secure
+     * protocols.if the port is not enabled then the URL is exclude.
+     *
+     * @return A set containing the string representation of health check urls for secure
+     * and non-secure protocols.
+     */
+    public Set<String> getHealthCheckUrls() {
+        Set<String> healthCheckUrlSet = new LinkedHashSet<>();
+        if (this.isUnsecurePortEnabled && !StringUtils.isEmpty(healthCheckUrl)) {
+            healthCheckUrlSet.add(healthCheckUrl);
+        }
+        if (this.isSecurePortEnabled && !StringUtils.isEmpty(secureHealthCheckUrl)) {
+            healthCheckUrlSet.add(secureHealthCheckUrl);
+        }
+        return healthCheckUrlSet;
+    }
+
+    public String getHealthCheckUrl() {
+        return healthCheckUrl;
+    }
+
+    public String getSecureHealthCheckUrl() {
+        return secureHealthCheckUrl;
+    }
+
+    /**
+     * gets the virtual internet protocol address for this instance.
+     * defaults to hostname if not specified.
+     *
+     * @return
+     */
+    @JsonProperty("vipAddress")
+    public String getVIPAddress() {
+        return vipAddress;
+    }
+
+    public String getSecureVipAddress() {
+        return secureVipAddress;
+    }
+
+    public Long getLastDirtyTimestamp() {
+        return lastDirtyTimestamp;
+    }
+
+    /**
+     * Set the time indicating that the instance was touched.
+     *
+     * @param lastDirtyTimestamp
+     */
+    public void setLastDirtyTimestamp(Long lastDirtyTimestamp) {
+        this.lastDirtyTimestamp = lastDirtyTimestamp;
+    }
+
+    /**
+     * Set the status for this instance.
+     *
+     * @param status status for this instance.
+     * @return the prev status if a different status from the current was set, null otherwise
+     */
+    public synchronized InstanceStatus setStatus(InstanceStatus status) {
+        if (this.status != status) {
+            InstanceStatus prev = this.status;
+            this.status = status;
+            setIsDirty();
+            return prev;
+        }
+        return null;
+    }
+
+    /**
+     * Set the status for this instance without updating the dirty timestamp.
+     */
+    public synchronized void setStatusWithoutDirty(InstanceStatus status) {
+        if (this.status != status) {
+            this.status = status;
+        }
+    }
+
+    /**
+     * Sets the overridden status fro this instance. Normally set by an external process to
+     * disable instance from taking traffic.
+     *
+     * @param status overridden status for this instance
+     */
+    public synchronized void setOverriddenStatus(InstanceStatus status) {
+        if (this.overriddenStatus != status) {
+            this.overriddenStatus = status;
+        }
+    }
+
+    /**
+     * returns whether any state changed so that {@link com.netflix.discovery.EurekaClient}
+     * can check whether to retransmit info or not on the heartbeat.
+     *
+     * @return
+     */
+    @JsonIgnore
+    public boolean isDirty() {
+        return isInstanceInfoDirty;
+    }
+
+    /**
+     * @return the lastDirtyTimestamp if is dirty, null otherwise.
+     */
+    public synchronized Long isDirtyWithTime() {
+        if (isInstanceInfoDirty) {
+            return lastDirtyTimestamp;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @param isDirty true if dirty,false otherwise.
+     * @deprecated user {@link #setIsDirty()} and {@link #unsetIsDirty(long)} to set an unset
+     */
+    public synchronized void setIsDirty(boolean isDirty) {
+        if (isDirty) {
+            setIsDirty();
+        } else {
+            isInstanceInfoDirty = false;
+            //else don't update lastDirtyTimestamp as we are setting isDirty to false
+        }
+    }
+
+    /**
+     * Sets the dirty flag so that the instance information can ben carried to
+     * the discovery server on the next heartbeat.
+     */
+    public synchronized void setIsDirty() {
+        isInstanceInfoDirty = true;
+        lastDirtyTimestamp = System.currentTimeMillis();
+    }
+
+    /**
+     * Set the dirty flag, an also return the timestamp of the isDirty event
+     *
+     * @return the timestamp when the isDirty flag is set.
+     */
+    public synchronized long setIsDirtyWithTime() {
+        setIsDirty();
+        return lastDirtyTimestamp;
+    }
+
+    /**
+     * Unset the dirty flag if the unsetDirtyTimestamp matches the lastDirtyTimestamp, No-op if
+     * lastDirtyTimestamp > unsetDirtyTimestamp
+     *
+     * @param unsetDirtyTimestamp the expected lastDirtyTimestamp to unset.
+     */
+    public synchronized void unsetIsDirty(long unsetDirtyTimestamp) {
+        if (this.lastDirtyTimestamp <= unsetDirtyTimestamp) {
+            isInstanceInfoDirty = false;
+        } else {
+
+        }
+    }
+
+    /**
+     * Sets a flag if this instance is the same as the discovery server that is
+     * return the instance. This flag is used by the discovery clients to identity
+     * the discovery server which is coordinating/returning the information.
+     */
+    public void setIsCoordinatingDiscoveryServer() {
+        String instanceId = getId();
+        if (instanceId != null && instanceId.equals(ApplicationInfoManager.getInstance().getInfo().getId())) {
+            isCoordinatingDiscoveryServer = true;
+        } else {
+            isCoordinatingDiscoveryServer = false;
+        }
+    }
+
+    /**
+     * finds if this instance is the coordinating discovery server
+     *
+     * @return true, if this instance is the coordinating discovery server,false otherwise.
+     */
+    @JsonProperty("isCoordinatingDiscoveryServer")
+    public Boolean getIsCoordinatingDiscoveryServer() {
+        return isCoordinatingDiscoveryServer;
+    }
+
+    /**
+     * returns the type of action done on the instance is the server.Primarily
+     * used for updating deltas in the {@link com.netflix.discovery.EurekaClient} instance
+     *
+     * @return action type on the intance.
+     */
+    public ActionType getActionType() {
+        return actionType;
+    }
+
+    /**
+     * @param actionType
+     */
+    public void setActionType(ActionType actionType) {
+        this.actionType = actionType;
+    }
+
+    /**
+     * Get AWS autscaling group name if any
+     *
+     * @return autoscaling group name of this instance.
+     */
+    @JsonProperty("asgName")
+    public String getAsgName() {
+        return asgName;
+    }
+
+    /**
+     * return the specification version of this application.
+     *
+     * @return the string indicating the version of the application.
+     */
+    @Deprecated
+    @JsonIgnore
+    public String getVersion() {
+        return version;
+    }
+
+    /**
+     * Register application specific metadata to be sent to the discovery server
+     *
+     * @param runtimeMetadata
+     */
+    synchronized void registerRuntimeMetadata(Map<String, String> runtimeMetadata) {
+        metadata.putAll(runtimeMetadata);
+        setIsDirty();
+    }
+
+    /**
+     * Get the zone that a particular instance is in.
+     * Note that for AWS deployments, myInfo should contain AWS dataCenterInfo which should contain
+     * the AWS zone of the instance, and availZones is ignored.
+     *
+     * @param availZones the list of available zones for non-AWS deployments
+     * @param myInfo     The InstanceInfo object of the instance
+     * @return The zone in which the particular instance belongs to.
+     */
+    public static String getZone(String[] availZones, InstanceInfo myInfo) {
+        String instanceZone = (availZones == null || availZones.length == 0) ? "default" : availZones[0];
+        if(myInfo != null && myInfo.getDataCenterInfo().getName() == DataCenterInfo.Name.Amazon){
+            String awsInstanceZone = ((AmazonInfo) myInfo.getDataCenterInfo()).get(AmazonInfo.MetaDataKey.availabilityZone);
+            if(awsInstanceZone != null){
+                instanceZone = awsInstanceZone;
+            }
+        }
+        return instanceZone;
     }
 
 
