@@ -153,7 +153,7 @@ public class Application {
     }
 
     private void _shuffleAndStoreInstances(boolean filterUpInstances, boolean indexByRemoteRegions,
-                                           @Nullable Map<String, Application> remoteRegionRegistry,
+                                           @Nullable Map<String, Applications> remoteRegionRegistry,
                                            @Nullable EurekaClientConfig clientConfig,
                                            @Nullable InstanceRegionChecker instanceRegionChecker) {
         List<InstanceInfo> instanceInfoList;
