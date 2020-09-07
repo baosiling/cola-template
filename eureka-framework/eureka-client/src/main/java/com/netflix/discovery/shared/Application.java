@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.InstanceRegionChecker;
-import com.netflix.discovery.provider.Serialization;
+import com.netflix.discovery.provider.Serializer;
 import com.netflix.discovery.util.StringCache;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author: wangzhx
  * @create: 2020-09-06 14:36
  */
-@Serialization("com.netflix.discovery.converters.EntityBodyConverter")
+@Serializer("com.netflix.discovery.converters.EntityBodyConverter")
 @XStreamAlias("application")
 @JsonRootName("application")
 public class Application {
