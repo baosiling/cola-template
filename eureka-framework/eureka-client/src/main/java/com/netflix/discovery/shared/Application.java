@@ -152,8 +152,24 @@ public class Application {
         return instances.size();
     }
 
+    /**
+     * Shuffles the list of instances in the application and stores it for future retrievals.
+     * @param filterUpInstances
+     *  indicates whether only the instances with status {@link com.netflix.appinfo.InstanceInfo.InstanceStatus#UP}
+     *  needs to be stored.
+     */
+    public void shuffleAndStoreInstances(boolean filterUpInstances) {
+        _shuffleAndStoreInstances(filterUpInstances, false, null, null, null);
+    }
+
+    public void shuffleAndStoreInstances(Map<String, Applications> remoteRegionsRegistry,
+                                         EurekaClientConfig clientConfig, InstanceRegionChecker instanceRegionChecker){
+        _shuffleAndStoreInstances(clientConfig.shouldFilterOnlyUpInstances(),
+                true, remoteRegionsRegistry, clientConfig, instanceRegionChecker);
+    }
+
     private void _shuffleAndStoreInstances(boolean filterUpInstances, boolean indexByRemoteRegions,
-                                           @Nullable Map<String, Applications> remoteRegionRegistry,
+                                           @Nullable Map<String, Applications> remoteRegionsRegistry,
                                            @Nullable EurekaClientConfig clientConfig,
                                            @Nullable InstanceRegionChecker instanceRegionChecker) {
         List<InstanceInfo> instanceInfoList;
@@ -161,7 +177,7 @@ public class Application {
             instanceInfoList = new ArrayList<>(instances);
         }
         boolean remoteIndexingActive = indexByRemoteRegions && null != instanceRegionChecker && null != clientConfig
-                && null != remoteRegionRegistry;
+                && null != remoteRegionsRegistry;
         if (remoteIndexingActive || filterUpInstances) {
             Iterator<InstanceInfo> it = instanceInfoList.iterator();
             while (it.hasNext()) {
@@ -171,11 +187,28 @@ public class Application {
                 } else if (remoteIndexingActive) {
                     String instanceRegion = instanceRegionChecker.getInstanceRegion(instanceInfo);
                     if (!instanceRegionChecker.isLocalRegion(instanceRegion)) {
-                        //TODO Applications
+                        Applications appsForRemoteRegion = remoteRegionsRegistry.get(instanceRegion);
+                        if(null == appsForRemoteRegion){
+                            appsForRemoteRegion = new Applications();
+                            remoteRegionsRegistry.put(instanceRegion, appsForRemoteRegion);
+                        }
+
+                        Application remoteApp =
+                                appsForRemoteRegion.getRegisteredApplications(instanceInfo.getAppName());
+                        if(null == remoteApp){
+                            remoteApp = new Application(instanceInfo.getAppName());
+                            appsForRemoteRegion.addApplication(remoteApp);
+                        }
+
+                        remoteApp.addInstance(instanceInfo);
+                        this.removeInstance(instanceInfo, false);
+                        it.remove();
                     }
                 }
             }
         }
+        Collections.shuffle(instanceInfoList, shuffleRandom);
+        this.shuffledInstances.set(instanceInfoList);
     }
 
 
