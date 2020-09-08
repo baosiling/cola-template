@@ -108,7 +108,7 @@ public interface EurekaClientConfig {
      * @deprecated gzip content encoding will be always enforced in the next minor
      * Eureka Release (see com.netflix.eureka.GzipEncodingEnforcingFilter).
      */
-    boolean shouldGzipContent();
+    boolean shouldGZipContent();
 
     /**
      * Indicates how long to wait (in seconds) before a read from eureka server
