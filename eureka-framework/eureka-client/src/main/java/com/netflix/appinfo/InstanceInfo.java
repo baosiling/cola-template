@@ -1,9 +1,11 @@
 package com.netflix.appinfo;
 
 import com.fasterxml.jackson.annotation.*;
+import com.google.inject.ProvidedBy;
 import com.netflix.appinfo.providers.Archaius1VipAddressResolver;
 import com.netflix.appinfo.providers.VipAddressResolver;
 import com.netflix.discovery.converters.Auto;
+import com.netflix.discovery.provider.Serializer;
 import com.netflix.discovery.util.StringCache;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
@@ -25,8 +27,8 @@ import java.util.function.Function;
  * serialized as specified by the <code>@Serializer</code>.
  * </p>
  */
-//TODO @ProvidedBy(EurekaConfigBasedInstanceInfoProvider.class)
-//TODO @Serializer("com.netflix.discovery.converters.EntityBodyConverter")
+@ProvidedBy(EurekaConfigBasedInstanceInfoProvider.class)
+@Serializer("com.netflix.discovery.converters.EntityBodyConverter")
 @XStreamAlias("instance")
 @JsonRootName("instance")
 public class InstanceInfo {
@@ -908,7 +910,7 @@ public class InstanceInfo {
      * @return the ip address, in AWS scenario it is a private IP.
      */
     @JsonProperty("ipAddr")
-    public String getIpAddr() {
+    public String getIPAddr() {
         return ipAddr;
     }
 
@@ -986,7 +988,8 @@ public class InstanceInfo {
         return securePort;
     }
 
-    public boolean isPortEnable(PortType type) {
+    @JsonIgnore
+    public boolean isPortEnabled(PortType type) {
         if (type == PortType.SECURE) {
             return isSecurePortEnabled;
         } else {
