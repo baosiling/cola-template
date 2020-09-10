@@ -1,6 +1,6 @@
 package com.netflix.appinfo;
 
-//TODO
 public interface HealthCheckHandler {
 
+    InstanceInfo.InstanceStatus getStatus(InstanceInfo.InstanceStatus currentStatus);
 }
