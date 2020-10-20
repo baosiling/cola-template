@@ -2,10 +2,12 @@ package com.netflix.discovery.shared.transport;
 
 /**
  * constants pertaining to property based transport configs
+ *
+ * @author David Liu
  */
 final class PropertyBasedTransportConfigConstants {
 
-    //NOTE: all keys are before any prefixes are applied
+    // NOTE: all keys are before any prefixes are applied
     static final String SESSION_RECONNECT_INTERVAL_KEY = "sessionedClientReconnectIntervalSeconds";
     static final String QUARANTINE_REFRESH_PERCENTAGE_KEY = "retryableClientQuarantineRefreshPercentage";
     static final String DATA_STALENESS_THRESHOLD_KEY = "applicationsResolverDataStalenessThresholdSeconds";
@@ -20,6 +22,7 @@ final class PropertyBasedTransportConfigConstants {
 
     static final String TRANSPORT_CONFIG_SUB_NAMESPACE = "transport";
 
+
     static class Values {
         static final int SESSION_RECONNECT_INTERVAL = 20*60;
         static final double QUARANTINE_REFRESH_PERCENTAGE = 0.66;
@@ -28,5 +31,4 @@ final class PropertyBasedTransportConfigConstants {
         static final int ASYNC_RESOLVER_WARMUP_TIMEOUT = 5000;
         static final int ASYNC_EXECUTOR_THREADPOOL_SIZE = 5;
     }
-
 }

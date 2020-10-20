@@ -14,9 +14,10 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * A supervisor task that schedules subtasks while enforce a timeout.
  * Wrapped subtasks must be thread safe.
+ *
+ * @author David Qiang Liu
  */
 public class TimedSupervisorTask extends TimerTask {
-
     private static final Logger logger = LoggerFactory.getLogger(TimedSupervisorTask.class);
 
     private final Counter successCounter;
@@ -28,25 +29,21 @@ public class TimedSupervisorTask extends TimerTask {
     private final String name;
     private final ScheduledExecutorService scheduler;
     private final ThreadPoolExecutor executor;
-    private final long timeoutMills;
+    private final long timeoutMillis;
     private final Runnable task;
 
     private final AtomicLong delay;
     private final long maxDelay;
 
-    public TimedSupervisorTask(String name, ScheduledExecutorService scheduler,
-                               ThreadPoolExecutor executor,
-                               int timeout,
-                               TimeUnit timeUnit,
-                               int expBackOffBound,
-                               Runnable task) {
+    public TimedSupervisorTask(String name, ScheduledExecutorService scheduler, ThreadPoolExecutor executor,
+                               int timeout, TimeUnit timeUnit, int expBackOffBound, Runnable task) {
         this.name = name;
         this.scheduler = scheduler;
         this.executor = executor;
-        this.timeoutMills = timeUnit.toMillis(timeout);
+        this.timeoutMillis = timeUnit.toMillis(timeout);
         this.task = task;
-        this.delay = new AtomicLong(timeoutMills);
-        this.maxDelay = timeoutMills * expBackOffBound;
+        this.delay = new AtomicLong(timeoutMillis);
+        this.maxDelay = timeoutMillis * expBackOffBound;
 
         // Initialize the counters and register.
         successCounter = Monitors.newCounter("success");
@@ -57,16 +54,14 @@ public class TimedSupervisorTask extends TimerTask {
         Monitors.registerObject(name, this);
     }
 
-
     @Override
     public void run() {
         Future<?> future = null;
-
         try {
             future = executor.submit(task);
             threadPoolLevelGauge.set((long) executor.getActiveCount());
-            future.get(timeoutMills, TimeUnit.MILLISECONDS); //block until done or timeout
-            delay.set(timeoutMills);
+            future.get(timeoutMillis, TimeUnit.MILLISECONDS);  // block until done or timeout
+            delay.set(timeoutMillis);
             threadPoolLevelGauge.set((long) executor.getActiveCount());
             successCounter.increment();
         } catch (TimeoutException e) {
@@ -76,14 +71,16 @@ public class TimedSupervisorTask extends TimerTask {
             long currentDelay = delay.get();
             long newDelay = Math.min(maxDelay, currentDelay * 2);
             delay.compareAndSet(currentDelay, newDelay);
+
         } catch (RejectedExecutionException e) {
-            if(executor.isShutdown() || scheduler.isShutdown()){
+            if (executor.isShutdown() || scheduler.isShutdown()) {
                 logger.warn("task supervisor shutting down, reject the task", e);
             } else {
                 logger.warn("task supervisor rejected the task", e);
             }
+
             rejectedCounter.increment();
-        } catch (Throwable e){
+        } catch (Throwable e) {
             if (executor.isShutdown() || scheduler.isShutdown()) {
                 logger.warn("task supervisor shutting down, can't accept the task");
             } else {
@@ -92,15 +89,14 @@ public class TimedSupervisorTask extends TimerTask {
 
             throwableCounter.increment();
         } finally {
-            if(future != null){
+            if (future != null) {
                 future.cancel(true);
             }
 
-            if(!scheduler.isShutdown()){
+            if (!scheduler.isShutdown()) {
                 scheduler.schedule(this, delay.get(), TimeUnit.MILLISECONDS);
             }
         }
-
     }
 
     @Override

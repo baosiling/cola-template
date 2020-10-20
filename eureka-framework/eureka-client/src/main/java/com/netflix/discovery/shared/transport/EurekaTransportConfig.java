@@ -2,6 +2,8 @@ package com.netflix.discovery.shared.transport;
 
 /**
  * Config class that governs configurations relevant to the transport layer
+ *
+ * @author David Liu
  */
 public interface EurekaTransportConfig {
 
@@ -79,6 +81,4 @@ public interface EurekaTransportConfig {
      * @return true by default.
      */
     boolean useBootstrapResolverForQuery();
-
-
 }

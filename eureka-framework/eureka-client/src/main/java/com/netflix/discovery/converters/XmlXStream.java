@@ -17,6 +17,8 @@
 package com.netflix.discovery.converters;
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.DiscoveryManager;
+import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import com.thoughtworks.xstream.XStream;
@@ -32,15 +34,15 @@ import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
  * </p>
  *
  * @author Karthik Ranganathan, Greg Kim
+ *
  */
 
 public class XmlXStream extends XStream {
 
     private static final XmlXStream s_instance = new XmlXStream();
-
     static {
         XStream.setupDefaultSecurity(s_instance);
-        s_instance.allowTypesByWildcard(new String[]{
+        s_instance.allowTypesByWildcard(new String[] {
                 "com.netflix.discovery.**", "com.netflix.appinfo.**"
         });
     }
@@ -63,6 +65,11 @@ public class XmlXStream extends XStream {
     }
 
     private static XmlFriendlyNameCoder initializeNameCoder() {
-        return new XmlFriendlyNameCoder();
+        EurekaClientConfig clientConfig = DiscoveryManager
+                .getInstance().getEurekaClientConfig();
+        if (clientConfig == null) {
+            return new XmlFriendlyNameCoder();
+        }
+        return new XmlFriendlyNameCoder(clientConfig.getDollarReplacement(), clientConfig.getEscapeCharReplacement());
     }
 }

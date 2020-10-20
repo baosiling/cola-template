@@ -1,0 +1,2 @@
+com/netflix/appinfo/providers/AsgClient.java
+ com.netflix.appinfo.providers.AsgClient

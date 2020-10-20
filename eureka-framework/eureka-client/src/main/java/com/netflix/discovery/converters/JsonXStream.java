@@ -1,6 +1,23 @@
+/*
+ * Copyright 2012 Netflix, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.netflix.discovery.converters;
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.DiscoveryManager;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
@@ -10,31 +27,35 @@ import com.thoughtworks.xstream.io.naming.NameCoder;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
 
 /**
- * An <tt>XStream</tt> specific implementation for serializing and deserializing
+ * An <tt>Xstream</tt> specific implementation for serializing and deserializing
  * to/from JSON format.
+ *
  * <p>
- * This class also allows configuration of custom serializers with XStream.
+ * This class also allows configuration of custom serializers with Xstream.
  * </p>
+ *
+ * @author Karthik Ranganathan
+ *
  */
 public class JsonXStream extends XStream {
 
     private static final JsonXStream s_instance = new JsonXStream();
-
     static {
         XStream.setupDefaultSecurity(s_instance);
-        s_instance.allowTypesByWildcard(new String[]{
+        s_instance.allowTypesByWildcard(new String[] {
                 "com.netflix.discovery.**", "com.netflix.appinfo.**"
         });
     }
 
     public JsonXStream() {
         super(new JettisonMappedXmlDriver() {
-           private final NameCoder coder = initializeNameCoder();
+            private final NameCoder coder = initializeNameCoder();
 
-           protected NameCoder getNameCoder() {
-               return this.coder;
-           }
+            protected NameCoder getNameCoder() {
+                return this.coder;
+            }
         });
+
         registerConverter(new Converters.ApplicationConverter());
         registerConverter(new Converters.ApplicationsConverter());
         registerConverter(new Converters.DataCenterInfoConverter());
@@ -50,7 +71,12 @@ public class JsonXStream extends XStream {
     }
 
     private static XmlFriendlyNameCoder initializeNameCoder() {
-        return new XmlFriendlyNameCoder();
+        EurekaClientConfig clientConfig = DiscoveryManager
+                .getInstance().getEurekaClientConfig();
+        if (clientConfig == null) {
+            return new XmlFriendlyNameCoder();
+        }
+        return new XmlFriendlyNameCoder(clientConfig.getDollarReplacement(), clientConfig.getEscapeCharReplacement());
     }
 
 }

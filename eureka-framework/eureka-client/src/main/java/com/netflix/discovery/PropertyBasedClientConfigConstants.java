@@ -2,11 +2,13 @@ package com.netflix.discovery;
 
 /**
  * constants pertaining to property based client configs
+ *
+ * @author David Liu
  */
 final class PropertyBasedClientConfigConstants {
     static final String CLIENT_REGION_FALLBACK_KEY = "eureka.region";
 
-    //NOTE: all keys are before any prefixes are applied
+    // NOTE: all keys are before any prefixes are applied
     static final String CLIENT_REGION_KEY = "region";
 
     static final String REGISTRATION_ENABLED_KEY = "registration.enabled";
@@ -80,5 +82,4 @@ final class PropertyBasedClientConfigConstants {
         static final int DEFAULT_EXECUTOR_THREAD_POOL_SIZE = 5;
         static final int DEFAULT_EXECUTOR_THREAD_POOL_BACKOFF_BOUND = 10;
     }
-
 }

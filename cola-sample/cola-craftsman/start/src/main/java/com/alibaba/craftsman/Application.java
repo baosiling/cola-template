@@ -17,6 +17,7 @@ import java.util.Date;
  *
  * @author Frank Zhang
  */
+//@EnableOpenApi
 @SpringBootApplication(scanBasePackages = {"com.alibaba.craftsman","com.alibaba.cola"})
 @MapperScan("com.alibaba.craftsman.tunnel.database")
 public class Application {

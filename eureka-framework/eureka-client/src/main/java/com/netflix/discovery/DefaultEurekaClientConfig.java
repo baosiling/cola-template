@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012 Netflix, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package com.netflix.discovery;
 
 import com.google.inject.ProvidedBy;
@@ -5,6 +21,7 @@ import com.netflix.appinfo.EurekaAccept;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
 import com.netflix.discovery.internal.util.Archaius1Utils;
+import com.netflix.discovery.providers.DefaultEurekaClientConfigProvider;
 import com.netflix.discovery.shared.transport.DefaultEurekaTransportConfig;
 import com.netflix.discovery.shared.transport.EurekaTransportConfig;
 
@@ -17,29 +34,37 @@ import java.util.List;
 import static com.netflix.discovery.PropertyBasedClientConfigConstants.*;
 
 /**
+ *
  * A default implementation of eureka client configuration as required by
- * {@link EurekaClientConfig}
+ * {@link EurekaClientConfig}.
  *
  * <p>
  * The information required for configuring eureka client is provided in a
- * configuration file. The configuration file is searched for in the classpath
+ * configuration file.The configuration file is searched for in the classpath
  * with the name specified by the property <em>eureka.client.props</em> and with
  * the suffix <em>.properties</em>. If the property is not specified,
- * <em>eureka-client.properties</em> is assumed as the default. The properties
+ * <em>eureka-client.properties</em> is assumed as the default.The properties
  * that are looked up uses the <em>namespace</em> passed on to this class.
  * </p>
  *
  * <p>
  * If the <em>eureka.environment</em> property is specified, additionally
- * <em>eureka-client-<eureka.environment>.properties</em> is loaded in addition to
- * <em>eureka-client.properties</em>
+ * <em>eureka-client-<eureka.environment>.properties</em> is loaded in addition
+ * to <em>eureka-client.properties</em>.
  * </p>
+ *
+ * @author Karthik Ranganathan
+ *
  */
 @Singleton
-//TODO @ProvidedBy(DefaultEurekaClientConfigProvider.class)
+@ProvidedBy(DefaultEurekaClientConfigProvider.class)
 public class DefaultEurekaClientConfig implements EurekaClientConfig {
 
-
+    /**
+     * @deprecated 2016-08-29 use {@link com.netflix.discovery.CommonConstants#DEFAULT_CONFIG_NAMESPACE}
+     */
+    @Deprecated
+    public static final String DEFAULT_NAMESPACE = CommonConstants.DEFAULT_CONFIG_NAMESPACE + ".";
     public static final String DEFAULT_ZONE = "defaultZone";
     public static final String URL_SEPARATOR = "\\s*,\\s*";
 
@@ -52,19 +77,37 @@ public class DefaultEurekaClientConfig implements EurekaClientConfig {
     }
 
     public DefaultEurekaClientConfig(String namespace) {
-        this.namespace = namespace.endsWith(".") ? namespace : namespace + ".";
+        this.namespace = namespace.endsWith(".")
+                ? namespace
+                : namespace + ".";
+
         this.configInstance = Archaius1Utils.initConfig(CommonConstants.CONFIG_FILE_NAME);
         this.transportConfig = new DefaultEurekaTransportConfig(namespace, configInstance);
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * com.netflix.discovery.EurekaClientConfig#getRegistryFetchIntervalSeconds
+     * ()
+     */
     @Override
     public int getRegistryFetchIntervalSeconds() {
-        return configInstance.getIntProperty(namespace + REGISTRY_REFRESH_INTERVAL_KEY, 30).get();
+        return configInstance.getIntProperty(
+                namespace + REGISTRY_REFRESH_INTERVAL_KEY, 30).get();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.netflix.discovery.EurekaClientConfig#
+     * getInstanceInfoReplicationIntervalSeconds()
+     */
     @Override
     public int getInstanceInfoReplicationIntervalSeconds() {
-        return configInstance.getIntProperty(namespace + REGISTRATION_REPLICATION_INTERVAL_KEY, 30).get();
+        return configInstance.getIntProperty(
+                namespace + REGISTRATION_REPLICATION_INTERVAL_KEY, 30).get();
     }
 
     @Override
@@ -118,6 +161,11 @@ public class DefaultEurekaClientConfig implements EurekaClientConfig {
                 namespace + EUREKA_SERVER_PROXY_PASSWORD_KEY, null).get();
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.netflix.discovery.EurekaClientConfig#shouldGZipContent()
+     */
     @Override
     public boolean shouldGZipContent() {
         return configInstance.getBooleanProperty(
@@ -253,7 +301,7 @@ public class DefaultEurekaClientConfig implements EurekaClientConfig {
     @Override
     public boolean shouldUnregisterOnShutdown() {
         return configInstance.getBooleanProperty(
-                namespace + SHOULD_UNREGISTER_ON_SHUTDOWN_KEY, true).get();
+              namespace + SHOULD_UNREGISTER_ON_SHUTDOWN_KEY, true).get();
     }
 
     /*
@@ -273,10 +321,10 @@ public class DefaultEurekaClientConfig implements EurekaClientConfig {
     }
 
     /*
-     * (non-Javadoc)
-     *
-     * @see com.netflix.discovery.EurekaClientConfig#shouldLogDeltaDiff()
-     */
+         * (non-Javadoc)
+         *
+         * @see com.netflix.discovery.EurekaClientConfig#shouldLogDeltaDiff()
+         */
     @Override
     public boolean shouldLogDeltaDiff() {
         return configInstance.getBooleanProperty(

@@ -7,7 +7,9 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * An alternative to (@link String#intern()) with no capacity constraints.
+ * An alternative to {@link String#intern()} with no capacity constraints.
+ *
+ * @author Tomasz Bak
  */
 public class StringCache {
 
@@ -16,8 +18,7 @@ public class StringCache {
     private static final StringCache INSTANCE = new StringCache();
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    //垃圾回收时，weakReference 会被回收
-    private final Map<String, WeakReference<String>> cache = new WeakHashMap<>();
+    private final Map<String, WeakReference<String>> cache = new WeakHashMap<String, WeakReference<String>>();
     private final int lengthLimit;
 
     public StringCache() {
@@ -30,7 +31,7 @@ public class StringCache {
 
     public String cachedValueOf(final String str) {
         if (str != null && (lengthLimit < 0 || str.length() <= lengthLimit)) {
-            //Return value from cache if available
+            // Return value from cache if available
             lock.readLock().lock();
             try {
                 WeakReference<String> ref = cache.get(str);
@@ -41,7 +42,7 @@ public class StringCache {
                 lock.readLock().unlock();
             }
 
-            //Update cache with new content
+            // Update cache with new content
             lock.writeLock().lock();
             try {
                 WeakReference<String> ref = cache.get(str);
@@ -69,5 +70,4 @@ public class StringCache {
     public static String intern(String original) {
         return INSTANCE.cachedValueOf(original);
     }
-
 }

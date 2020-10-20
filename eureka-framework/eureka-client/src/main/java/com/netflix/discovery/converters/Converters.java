@@ -16,15 +16,6 @@
 
 package com.netflix.discovery.converters;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.DataCenterInfo.Name;
@@ -44,6 +35,15 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * The custom {@link com.netflix.discovery.provider.Serializer} for serializing and deserializing the registry
@@ -513,7 +513,7 @@ public final class Converters {
                         Map<String, String> metadataMap = (Map<String, String>) context
                                 .convertAnother(info, Map.class);
                         Map<String, String> metadataMapInter = new HashMap<String, String>(metadataMap.size());
-                        for (Map.Entry<String, String> entry : metadataMap.entrySet()) {
+                        for (Entry<String, String> entry : metadataMap.entrySet()) {
                             metadataMapInter.put(StringCache.intern(entry.getKey()), StringCache.intern(entry.getValue()));
                         }
                         ((AmazonInfo) info).setMetadata(metadataMapInter);
@@ -783,7 +783,7 @@ public final class Converters {
                 if (!String.class.equals(returnClass)) {
 
                     Method method = returnClass.getDeclaredMethod("valueOf",
-                            java.lang.String.class);
+                            String.class);
                     Object valueObject = method.invoke(returnClass, value);
                     f.set(o, valueObject);
                 } else {

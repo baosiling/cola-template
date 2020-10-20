@@ -7,8 +7,9 @@ public interface VipAddressResolver {
 
     /**
      * Convert <code>VIPAddress</code> by substituting environment variables if necessary.
-     * @param vipAddressMacro
-     * @return
+     *
+     * @param vipAddressMacro the macro for which the interpolation needs to be made.
+     * @return a string representing the final <code>VIPAddress</code> after substitution.
      */
-    String resolveDeploymentContextBasedVipAddress(String vipAddressMacro);
+    String resolveDeploymentContextBasedVipAddresses(String vipAddressMacro);
 }

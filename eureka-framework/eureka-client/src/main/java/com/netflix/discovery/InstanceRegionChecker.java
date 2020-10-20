@@ -10,16 +10,12 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * @description:
- * @author: wangzhx
- * @create: 2020-09-06 22:13
+ * @author Nitesh Kant
  */
 public class InstanceRegionChecker {
-
     private static Logger logger = LoggerFactory.getLogger(InstanceRegionChecker.class);
 
     private final AzToRegionMapper azToRegionMapper;
-
     private final String localRegion;
 
     InstanceRegionChecker(AzToRegionMapper azToRegionMapper, String localRegion) {
@@ -43,11 +39,12 @@ public class InstanceRegionChecker {
                 return azToRegionMapper.getRegionForAvailabilityZone(availabilityZone);
             }
         }
+
         return null;
     }
 
     public boolean isLocalRegion(@Nullable String instanceRegion) {
-        return null == instanceRegion || instanceRegion.equals(localRegion);
+        return null == instanceRegion || instanceRegion.equals(localRegion); // no region == local
     }
 
     public String getLocalRegion() {
